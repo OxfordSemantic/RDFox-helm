@@ -1,0 +1,173 @@
+{{ include "rdfox.validatePersistence" . }}
+{{- $serverParams := .Values.serverParameters }}
+{{- $endpointParams := .Values.endpointParameters }}
+{{- $profile := index .Values.persistenceProfiles .Values.serverParameters.persistence }}
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "rdfox.fullname" . }}
+  labels:
+    {{- include "rdfox.labels" . | nindent 4 }}
+spec:
+  serviceName: {{ include "rdfox.fullname" . }}
+  replicas: {{ $profile.replicaCount }}
+  selector:
+    matchLabels:
+      {{- include "rdfox.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "rdfox.labels" . | nindent 8 }}
+    spec:
+      initContainers:
+        - name: rdfox-init
+          image: "{{ .Values.repositoryBasePath }}/{{ .Values.rdfoxInitImage.repository }}:{{ .Values.rdfoxVersion | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.rdfoxInitImage.pullPolicy }}
+          args:
+            - "-persistence"
+            - "{{ $serverParams.persistence }}"
+            - "-channel"
+            - "{{ $endpointParams.channel }}"
+            {{- if eq $endpointParams.channel "ssl" }}
+            - "-credentials"
+            - "$(RDFOX_TLS_CREDENTIALS)"
+            {{- end }}
+          env:
+          - name: RDFOX_ROLE
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.rdfoxAdminRole.secretName }}
+                key: {{ .Values.rdfoxAdminRole.secretKey }}
+          - name: RDFOX_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.rdfoxAdminPassword.secretName }}
+                key: {{ .Values.rdfoxAdminPassword.secretKey }}
+          - name: RDFOX_LICENSE_CONTENT
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.rdfoxLicense.secretName }}
+                key: {{ .Values.rdfoxLicense.secretKey }}
+          - name: RDFOX_TLS_CREDENTIALS
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.rdfoxTlsCredentials.secretName }}
+                key: {{ .Values.rdfoxTlsCredentials.secretKey }}
+                optional: true
+          - name: RDFOX_ENDPOINT_CREDENTIALS_PASSPHRASE
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.rdfoxTlsCredentialsPassphrase.secretName }}
+                key: {{ .Values.rdfoxTlsCredentialsPassphrase.secretKey }}
+                optional: true
+          - name: RDFOX_PERSISTENCE_ENCRYPTION_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.rdfoxPersistenceEncryptionKey.secretName }}
+                key: {{ .Values.rdfoxPersistenceEncryptionKey.secretKey }}
+                optional: true
+          - name: RDFOX_SESSION_ENCRYPTION_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.rdfoxSessionEncryptionKey.secretName }}
+                key: {{ .Values.rdfoxSessionEncryptionKey.secretKey }}
+                optional: true
+          - name: RDFOX_DELTA_QUERIES_ENCRYPTION_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.rdfoxDeltaQueriesEncryptionKey.secretName }}
+                key: {{ .Values.rdfoxDeltaQueriesEncryptionKey.secretKey }}
+                optional: true
+          {{- with .Values.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      containers:
+        - name: rdfox
+          image: "{{ .Values.repositoryBasePath }}/{{ .Values.rdfoxImage.repository }}:{{ .Values.rdfoxVersion | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.rdfoxImage.pullPolicy }}
+          securityContext:
+            capabilities:
+              drop:
+                - ALL
+          args:
+            {{- range $key, $value := $serverParams }}
+            - "-{{ $key }}"
+            - "{{ $value }}"
+            {{- end }}
+            {{- range $key, $value := $endpointParams }}
+            - "-{{ $key }}"
+            - "{{ $value }}"
+            {{- end }}
+            {{- if eq $serverParams.persistence "file-sequence" }}
+            - -persistence.notifications-address
+            - {{ cat "$(POD_IP)" "+12110" | nospace }}
+            {{- end }}
+            - daemon
+          ports:
+            - name: {{ include "rdfox.protocol" . }}
+              containerPort: {{ .Values.service.port }}
+              protocol: TCP
+          env:
+          - name: RDFOX_ROLE
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.rdfoxAdminRole.secretName }}
+                key: {{ .Values.rdfoxAdminRole.secretKey }}
+          - name: RDFOX_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.rdfoxAdminPassword.secretName }}
+                key: {{ .Values.rdfoxAdminPassword.secretKey }}
+          - name: RDFOX_LICENSE_CONTENT
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.rdfoxLicense.secretName }}
+                key: {{ .Values.rdfoxLicense.secretKey }}
+          - name: RDFOX_ENDPOINT_CREDENTIALS_PASSPHRASE
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.rdfoxTlsCredentialsPassphrase.secretName }}
+                key: {{ .Values.rdfoxTlsCredentialsPassphrase.secretKey }}
+                optional: true
+          - name: RDFOX_PERSISTENCE_ENCRYPTION_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.rdfoxPersistenceEncryptionKey.secretName }}
+                key: {{ .Values.rdfoxPersistenceEncryptionKey.secretKey }}
+                optional: true
+          - name: RDFOX_SESSION_ENCRYPTION_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.rdfoxSessionEncryptionKey.secretName }}
+                key: {{ .Values.rdfoxSessionEncryptionKey.secretKey }}
+                optional: true
+          - name: RDFOX_DELTA_QUERIES_ENCRYPTION_KEY
+            valueFrom:
+              secretKeyRef:
+                name: {{ .Values.rdfoxDeltaQueriesEncryptionKey.secretName }}
+                key: {{ .Values.rdfoxDeltaQueriesEncryptionKey.secretKey }}
+                optional: true
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          {{- with .Values.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+          {{- if .Values.resources }}
+          resources:
+            {{- toYaml .Values.resources | nindent 12 }}
+          {{- end }}
+      {{- with .Values.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+          persistentVolumeClaim:
+            claimName: {{ $profile.persistentVolumeClaim.name }}
+      {{- end }}

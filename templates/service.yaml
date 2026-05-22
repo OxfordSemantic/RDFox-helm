@@ -1,0 +1,38 @@
+{{- $protocol := include "rdfox.protocol" . }}
+
+# Headless service for StatefulSet - for stable pod DNS identity
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rdfox.fullname" . }}
+  labels:
+    {{- include "rdfox.labels" . | nindent 4 }}
+spec:
+  type: ClusterIP
+  clusterIP: "None"
+  ports:
+    - port: {{ .Values.service.port }}
+      targetPort: {{ $protocol }}
+      protocol: TCP
+      name: {{ $protocol }}
+  selector:
+    {{- include "rdfox.selectorLabels" . | nindent 4 }}
+
+---
+# Regular service - for normal client traffic
+# The current topology in a HA setup with this service sets up multiple instances of RDFox with read/write and this service will load balance traffic across those instances.
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "rdfox.fullname" . | printf "%s-loadbalancer" | trunc 63 | trimSuffix "-" }}
+  labels:
+    {{- include "rdfox.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.service.type }}
+  selector:
+    {{- include "rdfox.selectorLabels" . | nindent 4 }}
+  ports:
+  - port: {{ .Values.service.port }}
+    targetPort: {{ $protocol }}
+    protocol: TCP
+    name: {{ $protocol }}

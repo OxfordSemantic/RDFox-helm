@@ -1,0 +1,106 @@
+# Default values for rdfox.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+persistenceProfiles:
+  file:
+    replicaCount: 1
+    persistentVolumeClaim:
+      accessMode: ReadWriteOnce
+      size: 5Gi
+      name: rdfox-directory
+  file-sequence:
+    replicaCount: 3
+    persistentVolumeClaim:
+      accessMode: ReadWriteMany
+      size: 5Gi
+      name: rdfox-directory
+
+rdfoxVersion: "7.6-BETA"
+repositoryBasePath: "oxfordsemantic"
+
+# The RDFox init container values
+rdfoxInitImage:
+  repository: "rdfox-init"
+  pullPolicy: IfNotPresent
+
+# The RDFox container values
+rdfoxImage:
+  repository: "rdfox"
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 12110
+
+volumes:
+  - name: rdfox-directory
+
+volumeMounts:
+  - name: rdfox-directory
+    # This is the RDFox home directory where the persistent data will be stored.
+    mountPath: "/home/rdfox/.RDFox"
+    readOnly: false
+
+resources: {}
+  # To specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 1
+  #   memory: 1Gi
+  # requests:
+  #   cpu: 1
+  #   memory: 1Gi
+
+# The RDFox license values
+rdfoxLicense:
+  secretName: rdfox-license
+  secretKey: RDFox.lic
+
+# The RDFox admin rolename
+rdfoxAdminRole:
+  secretName: server-admin-credentials
+  secretKey: rolename
+
+# The RDFox admin password
+rdfoxAdminPassword:
+  secretName: server-admin-credentials
+  secretKey: password
+
+rdfoxTlsCredentials:
+  secretName: rdfox-tls-credentials
+  secretKey: credentials
+
+rdfoxTlsCredentialsPassphrase:
+  secretName: rdfox-tls-credentials
+  secretKey: passphrase
+
+rdfoxPersistenceEncryptionKey:
+  secretName: rdfox-encryption-keys
+  secretKey: persistence-encryption-key
+
+rdfoxSessionEncryptionKey:
+  secretName: rdfox-encryption-keys
+  secretKey: session-encryption-key
+
+rdfoxDeltaQueriesEncryptionKey:
+  secretName: rdfox-encryption-keys
+  secretKey: delta-queries-encryption-key
+
+serverParameters:
+  # Required server parameters for initialization
+  persistence: "file"
+
+  # Additional server parameters can be added here
+  api-log: "off"
+  
+endpointParameters:
+  # Required endpoint parameters for initialization
+  # channel: 
+
+  # Additional endpoint parameters can be added here
+  request-logger: "elf"
+
+# Override the default naming convention used by the Helm chart.
+# nameOverride: "some-name-override"
+# fullnameOverride: "some-fullname-override"

@@ -1,0 +1,18 @@
+{{- $profile := index .Values.persistenceProfiles .Values.serverParameters.persistence }}
+{{- with (and $profile $profile.persistentVolumeClaim) }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ .name }}
+  labels:
+    {{- include "rdfox.labels" $ | nindent 4 }}
+spec:
+  accessModes:
+    - {{ .accessMode }}
+  {{- if hasKey . "storageClass" }}
+  storageClassName: {{ toJson .storageClass }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .size }}
+{{- end }}

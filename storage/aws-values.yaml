@@ -1,0 +1,31 @@
+persistenceProfiles:
+  file:
+    storageClass:
+      name: ebs-sc-rdfox
+      provisioner: ebs.csi.aws.com
+      allowVolumeExpansion: true
+      reclaimPolicy: Retain
+      volumeBindingMode: Immediate
+    persistentVolumeClaim:
+      storageClass: ebs-sc-rdfox
+      accessMode: ReadWriteOnce
+      size: 5Gi
+      name: rdfox-directory
+  file-sequence:
+    storageClass:
+      name: efs-sc-rdfox
+      provisioner: efs.csi.aws.com
+      allowVolumeExpansion: true
+      reclaimPolicy: Retain
+      volumeBindingMode: Immediate
+      parameters:
+        provisioningMode: efs-ap
+        # Retrieve your Amazon EFS file system ID. You can find this in the Amazon EFS console, or use the following AWS CLI command.
+        # aws efs describe-file-systems --query "FileSystems[*].FileSystemId" --output text
+        fileSystemId: <file-system-id>
+        directoryPerms: "700"
+    persistentVolumeClaim:
+      storageClass: efs-sc-rdfox
+      accessMode: ReadWriteMany
+      size: 5Gi
+      name: rdfox-directory

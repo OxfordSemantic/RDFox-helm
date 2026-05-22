@@ -1,0 +1,20 @@
+Thank you for installing {{ .Chart.Name }}.
+
+Release:   {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+Version:   {{ .Chart.Version }}
+
+Accessing RDFox
+---------------
+
+1. Check that the RDFox pod / pods are running:
+
+	kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/instance={{ .Release.Name }}
+
+2. Port-forward the service to your local machine:
+
+	kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "rdfox.fullname" . | printf "%s-loadbalancer" | trunc 63 | trimSuffix "-" }} {{ .Values.service.port }}:{{ .Values.service.port }}
+
+3. Open RDFox Console:
+
+	{{ include "rdfox.protocol" . }}://localhost:{{ .Values.service.port }}/console

@@ -1,0 +1,37 @@
+persistenceProfiles:
+  file:
+    storageClass:
+      name: managed-csi-premium-rdfox
+      provisioner: disk.csi.azure.com
+      allowVolumeExpansion: true
+      reclaimPolicy: Retain
+      volumeBindingMode: Immediate
+      parameters:
+        skuName: Premium_ZRS
+    persistentVolumeClaim:
+      storageClass: managed-csi-premium-rdfox
+      accessMode: ReadWriteOnce
+      size: 5Gi
+      name: rdfox-directory
+
+# For file-sequence persistence, we need to use Azure Files with ReadWriteMany access mode, as multiple pods may need to access the same storage.
+# We also specify NFS protocol as the default SMB protocol does not support moving of files.
+  file-sequence:
+    storageClass:
+      name: azurefile-csi-premium-rdfox
+      provisioner: file.csi.azure.com
+      allowVolumeExpansion: true
+      reclaimPolicy: Retain
+      volumeBindingMode: Immediate
+      parameters:
+        skuName: Premium_ZRS
+        protocol: nfs
+      mountOptions:
+        - nconnect=4
+        - noresvport
+        - actimeo=30
+    persistentVolumeClaim:
+      storageClass: azurefile-csi-premium-rdfox
+      accessMode: ReadWriteMany
+      size: 5Gi
+      name: rdfox-directory

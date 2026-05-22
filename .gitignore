@@ -1,0 +1,18 @@
+# MacOS metadata files
+**/.DS_Store
+
+# Common backup files
+*.swp
+*.bak
+*.tmp
+*.orig
+*~
+
+# Various IDEs
+.project
+.idea/
+*.tmproj
+.vscode/
+
+# Helm values overrides
+values.local.yaml

@@ -1,0 +1,19 @@
+apiVersion: v2
+name: rdfox
+description: A Helm chart for RDFox
+type: application
+version: 1.0.0-BETA # This is the chart version following Semantic Versioning (https://semver.org/).
+home: https://www.oxfordsemantic.tech/rdfox
+sources:
+  - https://github.com/OxfordSemantic/RDFox-helm
+  - https://docs.oxfordsemantic.tech/
+icon: https://cdn.prod.website-files.com/6294f045665a4b69edebd934/64c402fb354c8a7b1e9b7fec_RDFox%20by%20Oxford%20Semantic%20Technologies%20Touch%20Icon.png
+keywords:
+  - rdfox
+  - rdf
+  - knowledge-graph
+  - semantic-web
+  - sparql
+  - datalog
+  - reasoning
+  - owl
