@@ -2,7 +2,7 @@ apiVersion: v2
 name: rdfox
 description: A Helm chart for RDFox
 type: application
-version: 1.0.0-BETA # This is the chart version following Semantic Versioning (https://semver.org/).
+version: 1.0.0 # This is the chart version following Semantic Versioning (https://semver.org/).
 home: https://www.oxfordsemantic.tech/rdfox
 sources:
   - https://github.com/OxfordSemantic/RDFox-helm

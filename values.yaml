@@ -16,7 +16,7 @@ persistenceProfiles:
       size: 5Gi
       name: rdfox-directory
 
-rdfoxVersion: "7.6-BETA"
+rdfoxVersion: "7.6"
 repositoryBasePath: "oxfordsemantic"
 
 # The RDFox init container values

@@ -36,7 +36,7 @@ To install with local defaults (for example, on Minikube), run:
 
 ```sh
 helm repo add ost https://helm.oxfordsemantic.tech
-helm install rdfox ost/rdfox --devel --set endpointParameters.channel=unsecure
+helm install rdfox ost/rdfox --set endpointParameters.channel=unsecure
 ```
 
 Setting `endpointParameters.channel=unsecure` disables TLS. Use this only for local testing or other non-production environments. For a TLS enabled setup, see [Configure TLS](#configure-tls).
@@ -56,7 +56,7 @@ When running RDFox on a cloud Kubernetes provider, use the provider storage sett
 To run the Helm chart with a specific storage configuration, use the `-f` flag to specify the appropriate values file. For example:
 
 ```sh
-helm install rdfox ost/rdfox --devel -f storage/<storage-configuration-file-name>.yaml --set endpointParameters.channel=unsecure
+helm install rdfox ost/rdfox -f storage/<storage-configuration-file-name>.yaml --set endpointParameters.channel=unsecure
 ```
 
 Replace `<storage-configuration-file-name>` with the appropriate file for your storage solution, for example `aws-values.yaml` for `AWS EKS` or `aks-values.yaml` for `Azure AKS`.
@@ -75,7 +75,7 @@ For local development, a practical approach is to create a copy of the `values.y
 Then install with:
 
 ```sh
-helm install rdfox ost/rdfox --devel -f values.local.yaml --set endpointParameters.channel=unsecure
+helm install rdfox ost/rdfox -f values.local.yaml --set endpointParameters.channel=unsecure
 ```
 
 For quick one-off changes, override values with `--set`.
@@ -83,7 +83,7 @@ For quick one-off changes, override values with `--set`.
 To enable high availability (HA), set the persistence server parameter to `file-sequence`:
 
 ```sh
-helm install rdfox ost/rdfox --devel \
+helm install rdfox ost/rdfox \
   --set endpointParameters.channel=unsecure \
   --set serverParameters.persistence=file-sequence
 ```
@@ -95,7 +95,7 @@ For further information on available parameters, see the documentation for the [
 To configure resources, use `--set` values such as:
 
 ```sh
-helm install rdfox ost/rdfox --devel \
+helm install rdfox ost/rdfox \
   --set endpointParameters.channel=unsecure \
   --set resources.requests.cpu=1 \
   --set resources.requests.memory=1Gi \
@@ -121,7 +121,7 @@ Replace `<PATH_TO_CREDENTIALS_FILE>` with the path to your TLS credential file (
 Then, to deploy RDFox with TLS enabled, run:
 
 ```sh
-helm install rdfox ost/rdfox --devel --set endpointParameters.channel=ssl
+helm install rdfox ost/rdfox --set endpointParameters.channel=ssl
 ```
 
 ### Configure Encryption Keys
